@@ -9,7 +9,9 @@ labyrinthe::labyrinthe( const dimension_t& dims ) : m_dims( dims ), m_laby_data(
     std::random_device                   rd;            // Will be used to obtain a seed for the random number engine
     std::mt19937                         
     //gen( rd( ) );  // Standard mersenne_twister_engine seeded with rd()
-    gen(1);
+    
+    gen(18);
+    
     std::uniform_int_distribution< int > dir_choice( 1, 4 );
 
 
