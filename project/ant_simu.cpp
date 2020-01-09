@@ -13,6 +13,7 @@
 # include "gui/event_manager.hpp"
 # include "display.hpp"
 
+#include "mpi.h"
 #include <chrono>
 
 std::chrono::time_point<std::chrono::system_clock> start[5], end[5];
@@ -24,7 +25,7 @@ void print_function_time(){
     std::cout << "function evaporation has been calculated in: "<< elapsed_seconds[2].count() << " seg" << std::endl;
     std::cout << "function update has been calculated in: "<< elapsed_seconds[3].count() << " seg" << std::endl;
     std::cout << "function display has been calculated in: "<< elapsed_seconds[4].count() << " seg" << std::endl;
-     std::cout << "----------------------------------------------------------" << std::endl;
+    std::cout << "----------------------------------------------------------" << std::endl;
 }
 
 void advance_time( const labyrinthe& land, pheromone& phen, 
@@ -58,6 +59,15 @@ void advance_time( const labyrinthe& land, pheromone& phen,
 int main(int nargs, char* argv[])
 {
     start[0] = std::chrono::system_clock::now();
+
+    MPI_Init(&nargs, &argv);
+    
+    int core_number, total_of_cores;
+    
+    MPI_Status(status);
+    MPI_Comm_rank(MPI_COMM_WORLD, &core_number);
+    MPI_Comm_size(MPI_COMM_WORLD, &total_of_cores);
+
 
     const dimension_t dims{32,64};// Dimension du labyrinthe
     const std::size_t life = int(dims.first*dims.second);
