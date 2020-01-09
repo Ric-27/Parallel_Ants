@@ -1,0 +1,9 @@
+/home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/../../../lib/libglut.so.3.10.0
+/home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/../../../lib/libglut.so.3
+/home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/../../../lib/libglut.so
+/home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/../../../lib/libglut.a
+/home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/../../../include/GL/freeglut.h
+/home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/../../../include/GL/freeglut_ext.h
+/home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/../../../include/GL/freeglut_std.h
+/home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/../../../include/GL/glut.h
+/home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/../../../lib/pkgconfig/freeglut.pc

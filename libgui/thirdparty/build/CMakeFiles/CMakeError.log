@@ -1,0 +1,50 @@
+Determining if files usbhid.h exist failed with the following output:
+Change Dir: /home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_76466/fast"
+make[2]: Entering directory '/home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/CMakeFiles/CMakeTmp'
+/usr/bin/make -f CMakeFiles/cmTC_76466.dir/build.make CMakeFiles/cmTC_76466.dir/build
+make[3]: Entering directory '/home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_76466.dir/CheckIncludeFiles.c.o
+/usr/bin/cc   -Wall -pedantic    -o CMakeFiles/cmTC_76466.dir/CheckIncludeFiles.c.o   -c /home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/CMakeFiles/CMakeTmp/CheckIncludeFiles.c
+/home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/CMakeFiles/CMakeTmp/CheckIncludeFiles.c:2:10: fatal error: usbhid.h: No such file or directory
+ #include <usbhid.h>
+          ^~~~~~~~~~
+compilation terminated.
+CMakeFiles/cmTC_76466.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_76466.dir/CheckIncludeFiles.c.o' failed
+make[3]: *** [CMakeFiles/cmTC_76466.dir/CheckIncludeFiles.c.o] Error 1
+make[3]: Leaving directory '/home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_76466/fast' failed
+make[2]: *** [cmTC_76466/fast] Error 2
+make[2]: Leaving directory '/home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/CMakeFiles/CMakeTmp'
+
+Source:
+/* */
+#include <usbhid.h>
+
+
+int main(void){return 0;}
+
+Determining if the function XParseGeometry exists failed with the following output:
+Change Dir: /home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_7adbb/fast"
+make[2]: Entering directory '/home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/CMakeFiles/CMakeTmp'
+/usr/bin/make -f CMakeFiles/cmTC_7adbb.dir/build.make CMakeFiles/cmTC_7adbb.dir/build
+make[3]: Entering directory '/home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_7adbb.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -Wall -pedantic -DCHECK_FUNCTION_EXISTS=XParseGeometry   -o CMakeFiles/cmTC_7adbb.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.10/Modules/CheckFunctionExists.c
+Linking C executable cmTC_7adbb
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_7adbb.dir/link.txt --verbose=1
+/usr/bin/cc  -Wall -pedantic -DCHECK_FUNCTION_EXISTS=XParseGeometry    -rdynamic CMakeFiles/cmTC_7adbb.dir/CheckFunctionExists.c.o  -o cmTC_7adbb -lm 
+CMakeFiles/cmTC_7adbb.dir/CheckFunctionExists.c.o: In function `main':
+CheckFunctionExists.c:(.text+0x10): undefined reference to `XParseGeometry'
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_7adbb.dir/build.make:97: recipe for target 'cmTC_7adbb' failed
+make[3]: *** [cmTC_7adbb] Error 1
+make[3]: Leaving directory '/home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_7adbb/fast' failed
+make[2]: *** [cmTC_7adbb/fast] Error 2
+make[2]: Leaving directory '/home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants/libgui/thirdparty/build/CMakeFiles/CMakeTmp'
+
+
