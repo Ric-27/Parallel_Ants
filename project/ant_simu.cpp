@@ -13,7 +13,6 @@
 # include "gui/event_manager.hpp"
 # include "display.hpp"
 
-#include <omp.h>
 #include <chrono>
 
 std::chrono::time_point<std::chrono::system_clock> start[5], end[5];
@@ -34,7 +33,6 @@ void advance_time( const labyrinthe& land, pheromone& phen,
 {
     start[1] = std::chrono::system_clock::now();
 
-    //#pragma omp parallel for schedule(static)
     for ( size_t i = 0; i < ants.size(); ++i ){
         ants[i].advance(phen, land, pos_food, pos_nest, cpteur);    
     }
@@ -113,10 +111,10 @@ int main(int nargs, char* argv[])
         win.blit();
         //----------------------------------------------------------
 
-        if(food_quantity >= 100 && !validation){
+        if(food_quantity >= 10000 && !validation){
             end[0] = std::chrono::system_clock::now();
             elapsed_seconds[0] = end[0] - start[0];
-            std::cout << "Ants found 100 pieces of food in: "<< elapsed_seconds[0].count() << " seg" << std::endl;
+            std::cout << "Ants found " << food_quantity << " pieces of food in: "<< elapsed_seconds[0].count() << " seg" << std::endl;
             validation = true; 
         } 
     });
