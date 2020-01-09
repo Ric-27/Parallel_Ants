@@ -61,7 +61,7 @@ int main(int nargs, char* argv[])
 {
     start[0] = std::chrono::system_clock::now();
 
-    const dimension_t dims{16,16};// Dimension du labyrinthe
+    const dimension_t dims{64,128};// Dimension du labyrinthe
     const std::size_t life = int(dims.first*dims.second);
     const int nb_ants = 2*dims.first*dims.second; // Nombre de fourmis
     const double eps = 0.75;  // Coefficient d'exploration
@@ -113,7 +113,7 @@ int main(int nargs, char* argv[])
         win.blit();
         //----------------------------------------------------------
 
-        if(food_quantity > 100 && !validation){
+        if(food_quantity > 10 && !validation){
             end[0] = std::chrono::system_clock::now();
             elapsed_seconds[0] = end[0] - start[0];
             std::cout << "Ants found 100 pieces of food in: "<< elapsed_seconds[0].count() << " seg" << std::endl;
