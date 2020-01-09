@@ -73,7 +73,7 @@ public:
             for ( decltype(m_dim.second) j = 0; j < m_dim.second; ++j ) { m_buffer_pheromone[i * m_stride + j] *= m_beta; }
     }
 
-    void mark_pheromone( const position_t& pos, const labyrinthe& laby ) {
+    void    mark_pheromone( const position_t& pos, const labyrinthe& laby ) {
         std::size_t i = pos.first;
         std::size_t j = pos.second;
         assert( i >= 0 );

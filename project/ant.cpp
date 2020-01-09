@@ -17,6 +17,7 @@ void ant::advance( pheromone& phen, const labyrinthe& laby, const position_t& po
             unset_loaded( );
             m_path_to_nest.resize( 0 );
             m_path_to_nest.push_back( pos_nest );
+
             cpteur_food += 1;
         }
     } else {
