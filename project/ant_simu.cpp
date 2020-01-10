@@ -13,12 +13,17 @@
 # include "gui/event_manager.hpp"
 # include "display.hpp"
 
-#include "mpi.h"
+#include <mpi.h>
 #include <chrono>
 
 std::chrono::time_point<std::chrono::system_clock> start[5], end[5];
 std::chrono::duration<double> elapsed_seconds[5];
 bool validation = false;
+size_t food_quantity = 0;
+
+void print_food_quantity(){
+    std::cout << "there is " << food_quantity << " food in the nest" << std::endl;
+}
 
 void print_function_time(){
     std::cout << "function advance has been calculated in: "<< elapsed_seconds[1].count() << " seg" << std::endl;
@@ -64,7 +69,6 @@ int main(int nargs, char* argv[])
     
     int core_number, total_of_cores;
     
-    MPI_Status(status);
     MPI_Comm_rank(MPI_COMM_WORLD, &core_number);
     MPI_Comm_size(MPI_COMM_WORLD, &total_of_cores);
 
@@ -72,7 +76,7 @@ int main(int nargs, char* argv[])
     const dimension_t dims{32,64};// Dimension du labyrinthe
     const std::size_t life = int(dims.first*dims.second);
     const int nb_ants = 2*dims.first*dims.second; // Nombre de fourmis
-    const double eps = 0.75;  // Coefficient d'exploration
+    
     const double alpha=0.97; // Coefficient de chaos
     //const double beta=0.9999; // Coefficient d'évaporation
     const double beta=0.999; // Coefficient d'évaporation
@@ -82,53 +86,106 @@ int main(int nargs, char* argv[])
     position_t pos_nest{dims.first/2,dims.second/2};
     // Location de la nourriture
     position_t pos_food{dims.first-1,dims.second-1};
-                          
-    
-    // Définition du coefficient d'exploration de toutes les fourmis.
-    ant::set_exploration_coef(eps);
-    // On va créer toutes les fourmis dans le nid :
-    std::vector<ant> ants;
-    ants.reserve(nb_ants);
-    for ( size_t i = 0; i < nb_ants; ++i )
-        ants.emplace_back(pos_nest, life);
-    // On crée toutes les fourmis dans la fourmilière.
-    pheromone phen(laby.dimensions(), pos_food, pos_nest, alpha, beta);
 
-    gui::context graphic_context(nargs, argv);
-    gui::window& win =  graphic_context.new_window(h_scal*laby.dimensions().second,h_scal*laby.dimensions().first+266);
-    display_t displayer( laby, phen, pos_nest, pos_food, ants, win );
-    size_t food_quantity = 0;
+    if(core_number == 1){
+        const double eps = 0.75;  // Coefficient d'exploration
+        size_t s_food_quantity = 0;
 
-    gui::event_manager manager;
-    manager.on_key_event(int('q'), [] (int code) { exit(0); });
+        // Définition du coefficient d'exploration de toutes les fourmis.
+        ant::set_exploration_coef(eps);
 
-    manager.on_key_event(int('t'), [] (int code) { print_function_time(); });
+        // On va créer toutes les fourmis dans le nid :
+        std::vector<ant> ants;
+        ants.reserve(nb_ants);
+        for ( size_t i = 0; i < nb_ants; ++i ) ants.emplace_back(pos_nest, life);
 
-    manager.on_display([&] { displayer.display(food_quantity); win.blit(); });
-
-    manager.on_idle([&] () { 
+        // On crée toutes les fourmis dans la fourmilière.
+        pheromone phen(laby.dimensions(), pos_food, pos_nest, alpha, beta);
         
-        advance_time(laby, phen, pos_nest, pos_food, ants, food_quantity);
+        while(true) {
+            std::vector<int> buffer;
+            buffer.reserve(1+2*nb_ants);
+            buffer.emplace_back(s_food_quantity);
+            for (int i = 0; i < nb_ants; i++)
+            {
+                position_t pos_ant = ants[i].get_position();
+                buffer.emplace_back(pos_ant.first);
+                buffer.emplace_back(pos_ant.second);
+            }
+            MPI_Request request;
+            MPI_Status status;
+            MPI_Isend(buffer.data(),1+2*nb_ants,MPI_INT,0,101,MPI_COMM_WORLD,&request);
+            advance_time(laby, phen, pos_nest, pos_food, ants, s_food_quantity); 
+            MPI_Wait(&request,&status);
+        }
+    }
+    if(core_number == 0){
         
-        //----------------------------------------------------------
-        start[4] = std::chrono::system_clock::now();
+        MPI_Status(status);
 
-        displayer.display(food_quantity);
+        std::vector<ant> ants;
+        ants.reserve(nb_ants);
 
-        end[4] = std::chrono::system_clock::now();
-        elapsed_seconds[4] = end[4] - start[4];
-        //----------------------------------------------------------        
-        win.blit();
-        //----------------------------------------------------------
+        //for ( size_t i = 0; i < nb_ants; ++i ) ants.emplace_back(pos_nest, life);
 
-        if(food_quantity >= 10000 && !validation){
-            end[0] = std::chrono::system_clock::now();
-            elapsed_seconds[0] = end[0] - start[0];
-            std::cout << "Ants found " << food_quantity << " pieces of food in: "<< elapsed_seconds[0].count() << " seg" << std::endl;
-            validation = true; 
-        } 
-    });
-    manager.loop();
+        pheromone phen(laby.dimensions(), pos_food, pos_nest, alpha, beta);
 
+        std::vector<int> buffer;
+        buffer.reserve(1+2*nb_ants);
+        MPI_Recv(buffer.data(),1+2*nb_ants,MPI_INT,1,101,MPI_COMM_WORLD,&status);
+        
+        food_quantity = buffer[0];
+        for (int i = 1; i < nb_ants-1; i += 2)
+        {
+            ants.emplace_back(position_t(buffer[i],buffer[i+1]),life);
+        }
+        
+
+        gui::context graphic_context(nargs, argv);
+        gui::window& win =  graphic_context.new_window(h_scal*laby.dimensions().second,h_scal*laby.dimensions().first+266);
+
+        display_t displayer( laby, phen, pos_nest, pos_food, ants, win );
+        
+        gui::event_manager manager;
+        manager.on_key_event(int('q'), [] (int code) { exit(0); MPI_Finalize(); });
+
+        manager.on_key_event(int('f'), [] (int code) { print_food_quantity(); });
+
+        manager.on_key_event(int('t'), [] (int code) { print_function_time(); });
+
+        manager.on_display([&] { displayer.display(food_quantity); win.blit(); });
+
+        manager.on_idle([&] () {
+                   
+            //----------------------------------------------------------
+            start[4] = std::chrono::system_clock::now();
+
+            displayer.display(food_quantity);
+
+            end[4] = std::chrono::system_clock::now();
+            elapsed_seconds[4] = end[4] - start[4];
+            //----------------------------------------------------------        
+            win.blit();
+            //----------------------------------------------------------
+
+            if(food_quantity >= 10000 && !validation){
+                end[0] = std::chrono::system_clock::now();
+                elapsed_seconds[0] = end[0] - start[0];
+                std::cout << "Ants found " << food_quantity << " pieces of food in: "<< elapsed_seconds[0].count() << " seg" << std::endl;
+                validation = true; 
+            }
+            buffer.clear();
+            buffer.reserve(1+2*nb_ants);   
+            MPI_Recv(buffer.data(),1+2*nb_ants,MPI_INT,1,101,MPI_COMM_WORLD,&status);
+        
+            food_quantity = buffer[0];
+            for (int i = 1; i < nb_ants-1; i += 2)
+            {
+                ants.emplace_back(position_t(buffer[i],buffer[i+1]),life);
+            }
+        });
+        manager.loop();
+    }
+    MPI_Finalize();
     return 0;
 }
