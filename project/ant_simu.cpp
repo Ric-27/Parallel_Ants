@@ -87,9 +87,13 @@ int main(int nargs, char* argv[])
     // Location de la nourriture
     position_t pos_food{dims.first-1,dims.second-1};
 
+    int buffer_size = 1 + 2 * nb_ants + laby.dimensions().first*laby.dimensions().second;
+
+    //--------------------------------------------------------------------
+
     if(core_number == 1){
         const double eps = 0.75;  // Coefficient d'exploration
-        size_t s_food_quantity = 0;
+        size_t food_quantity = 0;
 
         // Définition du coefficient d'exploration de toutes les fourmis.
         ant::set_exploration_coef(eps);
@@ -103,22 +107,35 @@ int main(int nargs, char* argv[])
         pheromone phen(laby.dimensions(), pos_food, pos_nest, alpha, beta);
         
         while(true) {
-            std::vector<int> buffer;
-            buffer.reserve(1+2*nb_ants);
-            buffer.emplace_back(s_food_quantity);
+            std::vector<double> buffer;
+
+            buffer.emplace_back(food_quantity);
+
             for (int i = 0; i < nb_ants; i++)
             {
                 position_t pos_ant = ants[i].get_position();
                 buffer.emplace_back(pos_ant.first);
                 buffer.emplace_back(pos_ant.second);
             }
+
+            for (int i = 0; i < laby.dimensions().first; i++){
+                for (int j = 0; j < laby.dimensions().second; j++)
+                {
+                    buffer.emplace_back((double)phen(i,j));
+                }                
+            }
+            
             MPI_Request request;
             MPI_Status status;
-            MPI_Isend(buffer.data(),1+2*nb_ants,MPI_INT,0,101,MPI_COMM_WORLD,&request);
-            advance_time(laby, phen, pos_nest, pos_food, ants, s_food_quantity); 
+            MPI_Isend(buffer.data(),buffer_size,MPI_DOUBLE,0,101,MPI_COMM_WORLD,&request);
+
+            advance_time(laby, phen, pos_nest, pos_food, ants, food_quantity); 
             MPI_Wait(&request,&status);
         }
     }
+
+    //------------------------------------------------------------
+
     if(core_number == 0){
         
         MPI_Status(status);
@@ -130,16 +147,16 @@ int main(int nargs, char* argv[])
 
         pheromone phen(laby.dimensions(), pos_food, pos_nest, alpha, beta);
 
-        std::vector<int> buffer;
-        buffer.reserve(1+2*nb_ants);
-        MPI_Recv(buffer.data(),1+2*nb_ants,MPI_INT,1,101,MPI_COMM_WORLD,&status);
+        std::vector<double> buffer(buffer_size);
+        
+        MPI_Recv(buffer.data(),buffer_size,MPI_DOUBLE,1,101,MPI_COMM_WORLD,&status);
         
         food_quantity = buffer[0];
-        for (int i = 1; i < nb_ants-1; i += 2)
+        for (int i = 1; i < nb_ants*2 + 1; i += 2)
         {
             ants.emplace_back(position_t(buffer[i],buffer[i+1]),life);
         }
-        
+        phen.swap_map(std::vector<double> (buffer.begin() + nb_ants * 2 + 1,buffer.end()));        
 
         gui::context graphic_context(nargs, argv);
         gui::window& win =  graphic_context.new_window(h_scal*laby.dimensions().second,h_scal*laby.dimensions().first+266);
@@ -147,7 +164,7 @@ int main(int nargs, char* argv[])
         display_t displayer( laby, phen, pos_nest, pos_food, ants, win );
         
         gui::event_manager manager;
-        manager.on_key_event(int('q'), [] (int code) { exit(0); MPI_Finalize(); });
+        manager.on_key_event(int('q'), [] (int code) { MPI_Abort(MPI_COMM_WORLD,MPI_SUCCESS); });
 
         manager.on_key_event(int('f'), [] (int code) { print_food_quantity(); });
 
@@ -174,15 +191,16 @@ int main(int nargs, char* argv[])
                 std::cout << "Ants found " << food_quantity << " pieces of food in: "<< elapsed_seconds[0].count() << " seg" << std::endl;
                 validation = true; 
             }
-            buffer.clear();
-            buffer.reserve(1+2*nb_ants);   
-            MPI_Recv(buffer.data(),1+2*nb_ants,MPI_INT,1,101,MPI_COMM_WORLD,&status);
-        
+
+            MPI_Recv(buffer.data(),buffer_size,MPI_DOUBLE,1,101,MPI_COMM_WORLD,&status);
+
             food_quantity = buffer[0];
-            for (int i = 1; i < nb_ants-1; i += 2)
+            for (int i = 1, j = 0; i < nb_ants * 2 + 1; i += 2, j++)
             {
-                ants.emplace_back(position_t(buffer[i],buffer[i+1]),life);
+                ants[j].set_position(position_t(buffer[i],buffer[i+1]));
+                //std::cout << buffer[i] <<" "<< buffer[i+1] << std::endl;
             }
+            phen.swap_map(std::vector<double> (buffer.begin() + nb_ants * 2 + 1,buffer.end()));
         });
         manager.loop();
     }
