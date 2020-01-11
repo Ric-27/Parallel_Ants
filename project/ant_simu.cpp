@@ -39,6 +39,7 @@ void advance_time( const labyrinthe& land, pheromone& phen,
 {
     start[1] = std::chrono::system_clock::now();
 
+    #pragma omp parallel for schedule(static) reduce(+:cpteur)
     for ( size_t i = 0; i < ants.size(); ++i ){
         ants[i].advance(phen, land, pos_food, pos_nest, cpteur);    
     }
