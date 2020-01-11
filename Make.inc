@@ -4,12 +4,12 @@
 PROJECT_ROOT = /home/ric/Documents/ENSTA/2/IN203/Trabajo_Propio/Projet_laby_ants
 ##############################################################
 # Compilateur utilise
-CXX = g++
+CXX = mpic++
 # Options pour le debogage et l'optimisation
 DEBUGOPT = -g -Wall -pedantic -fopenmp -D_GLIBCXX_DEBUG_PEDANTIC
 OPTIMOPT = -O2 -march=native -fopenmp
 # Parametres passes au compilateur
-CXXOPT = -std=c++11 -fPIC $(DEBUGOPT)
+CXXOPT = -std=c++11 -fPIC $(OPTIMOPT)
 
 # Ou est installe MPI ( utile que si on utilise autre chose qu'OpenMPI )
 MPIROOT    = /usr/lib/openmpi
