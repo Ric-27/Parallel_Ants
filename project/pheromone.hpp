@@ -94,6 +94,10 @@ public:
             m_alpha * std::max( {v1_left, v1_right, v1_upper, v1_bottom} ) +
             ( 1 - m_alpha ) * 0.25 * ( v1_left + v1_right + v1_upper + v1_bottom );
     }
+    
+    void swap_map(std::vector<pheromone_t> buffer){
+        m_map_of_pheromone.swap(buffer);
+    }
 
     void update( ) {
         m_map_of_pheromone.swap( m_buffer_pheromone );

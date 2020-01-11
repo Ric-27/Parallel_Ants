@@ -27,6 +27,8 @@ public:
     position_t return_to_nest() { position_t p = m_path_to_nest.back(); m_path_to_nest.pop_back(); return p; }
     static void set_exploration_coef(double eps) { m_eps = eps; }
 
+    void set_position(position_t new_position) {m_path_to_nest.back() = new_position;}
+
     void advance( pheromone& phen, const labyrinthe& land,
                   const position_t& pos_food, const position_t& pos_nest, std::size_t& cpteur_food );
 
