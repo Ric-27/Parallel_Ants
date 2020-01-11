@@ -98,8 +98,9 @@ public:
         }
     }
     
-    void swap_map(std::vector<pheromone_t> buffer){
-        m_map_of_pheromone.swap(buffer);
+    void swap_map(const std::vector<pheromone_t> buffer){
+        std::copy(buffer.begin(),buffer.end(),m_map_of_pheromone.begin());
+        //m_map_of_pheromone.swap(buffer);
     }
 
     void update( ) {

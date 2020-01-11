@@ -85,7 +85,6 @@ int main(int nargs, char* argv[])
     int buffer_size = 1 + 2 * nb_ants + laby.dimensions().first*laby.dimensions().second;
 
     MPI_Init(&nargs, &argv);   
-    
     MPI_Comm_rank(MPI_COMM_WORLD, &core_number);
     MPI_Comm_size(MPI_COMM_WORLD, &total_of_cores);
 
