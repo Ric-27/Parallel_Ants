@@ -84,13 +84,13 @@ void display_t::display( const std::size_t& compteur ) {
     for ( auto& ant : m_ref_ants ) {
         const position_t& pos_ant = ant.get_position( );
         m_p_ants.emplace_back( gui::point(h * pos_ant.second + 2, h * pos_ant.first + 2, 0.,
-                               gui::color::rgba( {255, 255, 0, 255} ) ),
+                               gui::color::rgba( {0, 255, 255, 128} ) ),
         gui::point(h * pos_ant.second + 2, h * pos_ant.first + 6, 0.,
-                               gui::color::rgba( {255, 255, 0, 255} ) ),
+                               gui::color::rgba( {0, 255, 255, 128} ) ),
         gui::point(h * pos_ant.second + 6, h * pos_ant.first + 6, 0.,
-                               gui::color::rgba( {255, 255, 0, 255} ) ),
+                               gui::color::rgba( {0, 255, 255, 128} ) ),
         gui::point(h * pos_ant.second + 6, h * pos_ant.first + 2, 0.,
-                               gui::color::rgba( {255, 255, 0, 255} ) ));
+                               gui::color::rgba( {0, 255, 255, 128} ) ));
     }
     gui::draw( m_p_ants );
     // Affichage de la courbe d'enfouragement :
@@ -105,9 +105,9 @@ void display_t::display( const std::size_t& compteur ) {
         if ( step > 1. ) {
             for ( std::size_t i = 0; i < m_curve.size( ) - 1; i++ ) {
                 m_p_curve.emplace_back(
-                    gui::point( i * step, ydec - m_curve[i] * h_max_val, 0., gui::color::rgba( {255, 0, 0} ) ),
+                    gui::point( i * step, ydec - m_curve[i] * h_max_val, 0., gui::color::rgba( {255, 255, 127} ) ),
                     gui::point( ( i + 1 ) * step, ydec - m_curve[i + 1] * h_max_val, 0.,
-                                gui::color::rgba( {255, 0, 0} ) ) );
+                                gui::color::rgba( {255, 255, 127} ) ) );
             }
         } else {
             double inv_step = 1. / ( step + 0.001 );
@@ -115,8 +115,8 @@ void display_t::display( const std::size_t& compteur ) {
                 int ind  = int( i * inv_step );
                 int ind2 = int( ( i + 1 ) * inv_step );
                 m_p_curve.emplace_back(
-                    gui::point( i, ydec - m_curve[ind] * h_max_val, 0., gui::color::rgba( {255, 0, 0} ) ),
-                    gui::point( i + 1, ydec - m_curve[ind2] * h_max_val, 0., gui::color::rgba( {255, 0, 0} ) ) );
+                    gui::point( i, ydec - m_curve[ind] * h_max_val, 0., gui::color::rgba( {255, 255, 127} ) ),
+                    gui::point( i + 1, ydec - m_curve[ind2] * h_max_val, 0., gui::color::rgba( {255, 255, 127} ) ) );
             }
         }
         gui::draw( m_p_curve );
