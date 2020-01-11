@@ -95,8 +95,9 @@ public:
             ( 1 - m_alpha ) * 0.25 * ( v1_left + v1_right + v1_upper + v1_bottom );
     }
     
-    void swap_map(std::vector<pheromone_t> buffer){
-        m_map_of_pheromone.swap(buffer);
+    void swap_map(const std::vector<pheromone_t> buffer){
+        std::copy(buffer.begin(),buffer.end(),m_map_of_pheromone.begin());
+        //m_map_of_pheromone.swap(buffer);
     }
 
     void update( ) {
