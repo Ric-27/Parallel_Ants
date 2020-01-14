@@ -95,7 +95,7 @@ void display_t::display( const std::size_t& compteur ) {
     gui::draw( m_p_ants );
     // Affichage de la courbe d'enfouragement :
     m_curve.push_back( compteur );
-    if ( m_curve.size( ) > 1 ) {
+    if ( m_curve.size( ) > 1 ) { 
         std::vector< gui::segment > m_p_curve;
         int                         sz_win = m_ref_win.size( ).first;
         int                         ydec   = m_ref_win.size( ).second - 1;

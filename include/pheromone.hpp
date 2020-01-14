@@ -99,7 +99,7 @@ public:
         std::copy(buffer.begin(),buffer.end(),m_map_of_pheromone.begin());
         //m_map_of_pheromone.swap(buffer);
     }
-
+    
     void update( ) {
         m_map_of_pheromone.swap( m_buffer_pheromone );
 	std::copy(m_map_of_pheromone.begin(), m_map_of_pheromone.end(),

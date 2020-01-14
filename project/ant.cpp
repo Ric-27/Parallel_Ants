@@ -88,5 +88,5 @@ void ant::advance( pheromone& phen, const labyrinthe& laby, const position_t& po
         m_path_to_nest.emplace_back( new_pos_ant );
         if ( get_position( ) == pos_food ) { set_loaded( ); }
         if (get_position() == pos_nest) { cur_life = max_life; }
-    }
+    } 
 }

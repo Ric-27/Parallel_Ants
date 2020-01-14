@@ -8,6 +8,7 @@
 # include "gui/window.hpp"
 # include "gui/segment.hpp"
 
+
 struct display_t
 {
     display_t( const labyrinthe& laby, const pheromone& phen, 

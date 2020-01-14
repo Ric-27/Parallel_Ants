@@ -37,6 +37,6 @@ private:
     state m_state;
     std::vector<position_t> m_path_to_nest;
     std::size_t max_life, cur_life;
-};
+}; 
 
 #endif

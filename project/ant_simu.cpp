@@ -25,6 +25,10 @@ void print_food_quantity(){
     std::cout << "there is " << food_quantity << " food in the nest" << std::endl;
 }
 
+void debug(std::string c = "®"){
+    std::cout << c << std::endl;
+}
+
 void print_function_time(){
     std::cout << "function advance has been calculated in: "<< elapsed_seconds[1].count() << " seg" << std::endl;
     std::cout << "function evaporation has been calculated in: "<< elapsed_seconds[2].count() << " seg" << std::endl;
@@ -64,10 +68,11 @@ void advance_time( const labyrinthe& land, pheromone& phen,
 int main(int nargs, char* argv[])
 {
     bool validation = false;
+    bool debug_validation = false;
 
     int core_number, total_of_cores;
 
-    const dimension_t dims{64,128};// Dimension du labyrinthe
+    const dimension_t dims{32,64};// Dimension du labyrinthe
     const std::size_t life = int(dims.first*dims.second);
     const int nb_ants = 2*dims.first*dims.second; // Nombre de fourmis
     
@@ -81,83 +86,126 @@ int main(int nargs, char* argv[])
     // Location de la nourriture
     position_t pos_food{dims.first-1,dims.second-1};
 
-    int buffer_size = 1 + 2 * nb_ants + laby.dimensions().first*laby.dimensions().second;
-
     MPI_Init(&nargs, &argv);   
     
     MPI_Comm_rank(MPI_COMM_WORLD, &core_number);
     MPI_Comm_size(MPI_COMM_WORLD, &total_of_cores);
+    //
+    MPI_Group world_group, display_group, calcul_group;
+    MPI_Comm_group(MPI_COMM_WORLD, &world_group);
+    MPI_Comm display_comm, calcul_comm;
 
+    const int core_0_1[2] = {0, 1};
+    int core_1_n[total_of_cores-1];
+    for (int i = 1; i < total_of_cores; i++)
+    {
+        core_1_n[i - 1] = i;
+    }
+    if(core_number <= 1) {
+        MPI_Group_incl(world_group, 2, core_0_1, &display_group);
+        MPI_Comm_create_group(MPI_COMM_WORLD, display_group, 0, &display_comm);
+    }
+    if(core_number > 0) {
+        MPI_Group_incl(world_group, total_of_cores - 1, core_1_n, &calcul_group);
+        MPI_Comm_create_group(MPI_COMM_WORLD, calcul_group, 1, &calcul_comm);
+    }
+    //
+    int nb_ants_loc = nb_ants / (total_of_cores - 1);
+    int buffer_size = 1 + 2 * (nb_ants_loc * (total_of_cores - 1)) + laby.dimensions().first*laby.dimensions().second;
+    
     //--------------------------------------------------------------------
-
-    if(core_number == 1){
+    if (core_number >= 1)
+    { 
         const double eps = 0.75;  // Coefficient d'exploration
-        size_t food_quantity = 0;
-
+        
         // Définition du coefficient d'exploration de toutes les fourmis.
         ant::set_exploration_coef(eps);
-
-        // On va créer toutes les fourmis dans le nid :
         std::vector<ant> ants;
-        ants.reserve(nb_ants);
-        for ( size_t i = 0; i < nb_ants; ++i ) ants.emplace_back(pos_nest, life);
 
+        ants.reserve(nb_ants_loc);  
+
+        for ( size_t i = 0; i < nb_ants_loc; ++i ) {
+            ants.emplace_back(pos_nest, life);
+        }
         // On crée toutes les fourmis dans la fourmilière.
         pheromone phen(laby.dimensions(), pos_food, pos_nest, alpha, beta);
-        
+        size_t food_loc = 0;    
         while(true) {
-            std::vector<double> buffer;
+            int food_total = 0;
+    
+            std::vector<double> buffer_ants(2*nb_ants_loc*(total_of_cores - 1));
+            std::vector<double> buffer_ants_loc;
 
-            buffer.emplace_back((double)food_quantity);
+            std::vector<double> buffer_phen(laby.dimensions().first*laby.dimensions().second);
+            std::vector<double> buffer_phen_loc;
 
-            for (size_t i = 0; i < nb_ants; i++)
+            for (size_t i = 0; i < nb_ants_loc; i++)
             {
                 position_t pos_ant = ants[i].get_position();
-                buffer.emplace_back((double)pos_ant.first);
-                buffer.emplace_back((double)pos_ant.second);
+                buffer_ants_loc.emplace_back((double)pos_ant.first);
+                buffer_ants_loc.emplace_back((double)pos_ant.second);
             }
 
             for (std::size_t i = 0; i < laby.dimensions().first; i++){
                 for (std::size_t j = 0; j < laby.dimensions().second; j++)
                 {
-                    buffer.emplace_back((double)phen(i,j));
-                }                
+                    buffer_phen_loc.emplace_back((double)phen(i,j));
+                }                 
+            }
+            MPI_Reduce(&food_loc,&food_total,1,MPI_INT,MPI_SUM,0,calcul_comm);
+            //debug("reduce");
+            MPI_Gather(buffer_ants_loc.data(),buffer_ants_loc.size(),MPI_DOUBLE,buffer_ants.data(),buffer_ants_loc.size(),MPI_DOUBLE,0,calcul_comm);
+            //debug("gather");
+            MPI_Allreduce(buffer_phen_loc.data(),buffer_phen.data(),buffer_phen.size(),MPI_DOUBLE,MPI_MAX,calcul_comm);
+            //debug("all reduce");
+            phen.swap_map(buffer_phen);
+            if(core_number==1){
+                std::vector<double> buffer;
+                buffer.emplace_back((double)food_total);
+                buffer.insert(buffer.end(),buffer_ants.begin(),buffer_ants.end());
+                buffer.insert(buffer.end(),buffer_phen.begin(),buffer_phen.end());
+                
+                /*if(!debug_validation){
+                    std::cout << food_total << std::endl;
+                    debug_validation = false;
+                }*/
+
+                MPI_Request request;
+                MPI_Status status;
+                MPI_Isend(buffer.data(),buffer.size(),MPI_DOUBLE,0,101,display_comm,&request);
+                advance_time(laby, phen, pos_nest, pos_food, ants, food_loc); 
+                MPI_Wait(&request,&status);
+            } else {
+                advance_time(laby, phen, pos_nest, pos_food, ants, food_loc);
             }
             
-            MPI_Request request;
-            MPI_Status status;
-            MPI_Isend(buffer.data(),buffer.size(),MPI_DOUBLE,0,101,MPI_COMM_WORLD,&request);
-
-            advance_time(laby, phen, pos_nest, pos_food, ants, food_quantity); 
-            MPI_Wait(&request,&status);
         }
     }
-
     //------------------------------------------------------------
 
     if(core_number == 0){
         start[0] = std::chrono::system_clock::now();
-        
-        int pher_start = nb_ants * 2 + 1;
+
+        int pher_start = 2 * (nb_ants_loc * (total_of_cores - 1)) + 1;
 
         MPI_Status(status);
 
         std::vector<ant> ants;
         ants.reserve(nb_ants);
 
-        //for ( size_t i = 0; i < nb_ants; ++i ) ants.emplace_back(pos_nest, life);
-
         pheromone phen(laby.dimensions(), pos_food, pos_nest, alpha, beta);
 
         std::vector<double> buffer(buffer_size);
         
-        MPI_Recv(buffer.data(),buffer.size(),MPI_DOUBLE,1,101,MPI_COMM_WORLD,&status);
-        
+        MPI_Recv(buffer.data(),buffer.size(),MPI_DOUBLE,1,101,display_comm,&status);
+        //debug("recibi la primera");        
         food_quantity = buffer[0];
         for (size_t i = 1; i < pher_start; i += 2)
         {
             ants.emplace_back(position_t(buffer[i],buffer[i+1]),life);
+            //std::cout << buffer[i] << " " << buffer[i+1] << std::endl;
         }
+
         phen.swap_map(std::vector<double>(buffer.begin() + pher_start,buffer.end()));        
 
         gui::context graphic_context(nargs, argv);
@@ -194,13 +242,13 @@ int main(int nargs, char* argv[])
                 validation = true; 
             }
 
-            MPI_Recv(buffer.data(),buffer.size(),MPI_DOUBLE,1,101,MPI_COMM_WORLD,&status);
-
+            MPI_Recv(buffer.data(),buffer.size(),MPI_DOUBLE,1,101,display_comm,&status);
+            //debug("recibi");
+            //std::cout << buffer.size() << std::endl;
             food_quantity = buffer[0];
             for (size_t i = 1, j = 0; i < pher_start; i += 2, j++)
             {
                 ants[j].set_position(position_t(buffer[i],buffer[i+1]));
-                //std::cout << buffer[i] <<" "<< buffer[i+1] << std::endl;
             }
             phen.swap_map(std::vector<double> (buffer.begin() + pher_start,buffer.end()));
         });
