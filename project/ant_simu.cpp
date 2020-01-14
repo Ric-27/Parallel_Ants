@@ -238,7 +238,7 @@ int main(int nargs, char* argv[])
             if(food_quantity >= 10000 && !validation){
                 end[0] = std::chrono::system_clock::now();
                 elapsed_seconds[0] = end[0] - start[0];
-                std::cout << "Ants found " << food_quantity << " pieces of food in: "<< elapsed_seconds[0].count() << " seg" << std::endl;
+                std::cout << ants.size() <<" ants found " << food_quantity << " pieces of food in: "<< elapsed_seconds[0].count() << " seg" << std::endl;
                 validation = true; 
             }
 
