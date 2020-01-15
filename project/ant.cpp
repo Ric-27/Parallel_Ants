@@ -17,6 +17,7 @@ void ant::advance( pheromone& phen, const labyrinthe& laby, const position_t& po
             unset_loaded( );
             m_path_to_nest.resize( 0 );
             m_path_to_nest.push_back( pos_nest );
+
             cpteur_food += 1;
         }
     } else {
@@ -84,7 +85,9 @@ void ant::advance( pheromone& phen, const labyrinthe& laby, const position_t& po
             else  // if (north_phen == max_phen)
                 new_pos_ant.first += 1;
         }
+
         phen.mark_pheromone( new_pos_ant, laby );
+        
         m_path_to_nest.emplace_back( new_pos_ant );
         if ( get_position( ) == pos_food ) { set_loaded( ); }
         if (get_position() == pos_nest) { cur_life = max_life; }
