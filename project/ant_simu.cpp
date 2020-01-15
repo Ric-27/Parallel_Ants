@@ -33,7 +33,7 @@ void advance_time( const labyrinthe& land, pheromone& phen,
 {
     start[1] = std::chrono::system_clock::now();
 
-    #pragma omp parallel for schedule(static) reduction(+:cpteur)
+    #pragma omp parallel for schedule(dynamic,64) reduction(+:cpteur)
     for ( size_t i = 0; i < ants.size(); ++i ){
         ants[i].advance(phen, land, pos_food, pos_nest, cpteur);    
     }
@@ -99,14 +99,23 @@ int main(int nargs, char* argv[])
 
     manager.on_idle([&] () { 
         
-        advance_time(laby, phen, pos_nest, pos_food, ants, food_quantity);
-        
+        #pragma omp sections
+        {
+            #pragma omp section
+            {
+                advance_time(laby, phen, pos_nest, pos_food, ants, food_quantity);
+            }
+            #pragma omp section
+            {
+                start[4] = std::chrono::system_clock::now();
+                //#pragma omp master
+                displayer.display(food_quantity);
+                end[4] = std::chrono::system_clock::now();
+                elapsed_seconds[4] = end[4] - start[4];
+            }
+        }
         //----------------------------------------------------------
-        start[4] = std::chrono::system_clock::now();
-        #pragma omp master
-            displayer.display(food_quantity);
-        end[4] = std::chrono::system_clock::now();
-        elapsed_seconds[4] = end[4] - start[4];
+        
         //----------------------------------------------------------        
         win.blit();
         //----------------------------------------------------------
