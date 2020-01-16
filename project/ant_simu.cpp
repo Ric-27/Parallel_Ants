@@ -67,7 +67,7 @@ int main(int nargs, char* argv[])
 
     int core_number, total_of_cores;
 
-    const dimension_t dims{32,64};// Dimension du labyrinthe
+    const dimension_t dims{64,128};// Dimension du labyrinthe
     const std::size_t life = int(dims.first*dims.second);
     const int nb_ants = 2*dims.first*dims.second; // Nombre de fourmis
     
