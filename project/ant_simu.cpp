@@ -61,7 +61,7 @@ int main(int nargs, char* argv[])
 {
     start[0] = std::chrono::system_clock::now();
 
-    const dimension_t dims{64,128};// Dimension du labyrinthe
+    const dimension_t dims{32,64};// Dimension du labyrinthe
     const std::size_t life = int(dims.first*dims.second);
     const int nb_ants = 2*dims.first*dims.second; // Nombre de fourmis
     const double eps = 0.75;  // Coefficient d'exploration
