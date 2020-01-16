@@ -12,6 +12,7 @@
 # include "gui/quad.hpp"
 # include "gui/event_manager.hpp"
 # include "display.hpp"
+#include "omp.h"
 
 #include <chrono>
 
@@ -33,7 +34,7 @@ void advance_time( const labyrinthe& land, pheromone& phen,
 {
     start[1] = std::chrono::system_clock::now();
 
-    //#pragma omp parallel for schedule(dynamic,64) reduction(+:cpteur)
+    #pragma omp parallel for schedule(dynamic,64) reduction(+:cpteur)
     for ( size_t i = 0; i < ants.size(); ++i ){
         ants[i].advance(phen, land, pos_food, pos_nest, cpteur);    
     }
@@ -99,8 +100,9 @@ int main(int nargs, char* argv[])
 
     manager.on_idle([&] () { 
         
+        //omp_set_num_threads(2);
         #pragma omp sections
-        {
+        {               
             #pragma omp section
             {
                 advance_time(laby, phen, pos_nest, pos_food, ants, food_quantity);
